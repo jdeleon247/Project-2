@@ -1,13 +1,12 @@
-\#!/bin/bash
+#!/bin/bash
 
 group="CSI230"
 
 checkRoot()
 {
-   if [[ $EUID -ne 0 ]];
-      then
-      echo "This script must be run as root"
-      exit 1
+   if [ "$(id -u)" != "0" ]; then
+    echo "You must be the superuser to run this script" >&2
+    exit 1
    fi
 }
 
@@ -70,4 +69,5 @@ fi
 checkParameters
 checkRoot
 checkGroup
-checkEmails
+export -f checkEmails
+su jonathandeleon -c "bash -c checkEmails"
