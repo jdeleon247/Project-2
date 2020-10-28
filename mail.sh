@@ -1,12 +1,12 @@
-#!/bin/bash
+\#!/bin/bash
 
 group="CSI230"
 
 checkRoot()
 {
-   if [[ $EUID -ne 0 ]]; 
+   if [[ $EUID -ne 0 ]];
       then
-      echo "This script must be run as root" 
+      echo "This script must be run as root"
       exit 1
    fi
 }
@@ -31,29 +31,28 @@ done
 }
 checkGroup()
 {
-   if ! grep -q $group /etc/group   
+   if ! grep -q $group /etc/group
    then
-      echo "creating group "$group 
+      echo "creating group "$group
       groupadd $group
    fi
 }
 
 checkEmails()
 {
-   for user in $(cat emails.txt | cut -d "@" -f 1); 
-   do randompw=$(openssl rand -base64 32); 
-      if ! id $user &>/dev/null; then
-         echo "${user}: user not found"
-      fi 
-   
-   echo $user:$randompw
-   done
-}
+   for user in $(cat emails.txt | cut -d "@" -f 1);
+   do randompw=$(openssl rand -base64 32);
+      if id $user &>/dev/null; then
+         echo "changing password for ${user}"
+      fi
 
-errorExit()
-{
-   echo "$1" 1>&2
-   exit 1
+   adduser --gecos "" --disabled-password $user &>/dev/null
+   chage -l $user
+   echo $user:$randompw | tee /dev/tty | chpasswd
+      for email in $(cat emails.txt);
+        do echo "Hello ${user}, your new password is ${randompw}" | s-nail -v -s "Login Credentials" "${email}" -r "jonathan.deleon@mymail.champlain.edu"
+        done
+   done
 }
 
 #Main
@@ -63,7 +62,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-if [ ! -f "$2" ]; then 
+if [ ! -f "$2" ]; then
    echo "$2 does not exist"
    exit 1
 fi
