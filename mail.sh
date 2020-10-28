@@ -48,7 +48,7 @@ addAccounts()
    randompw=$(openssl rand -base64 32);
    adduser --gecos "" --disabled-password $user &>/dev/null
    echo $user:$randompw | chpasswd
-   chage -l $user >/dev/null
+   passwd --expire $user &>/dev/null
    sudo -u jonathandeleon bash << HereTag
    echo "Hello ${user}, your new password is ${randompw}" | s-nail -v -s "Login Credentials" $email &>/dev/null
 HereTag
