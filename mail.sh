@@ -28,6 +28,7 @@ while [ "$1" != "" ]; do
     shift
 done
 }
+
 checkGroup()
 {
    if ! grep -q $group /etc/group
@@ -37,21 +38,21 @@ checkGroup()
    fi
 }
 
-checkEmails()
+addAccounts()
 {
-   for user in $(cat emails.txt | cut -d "@" -f 1);
-   do randompw=$(openssl rand -base64 32);
+   for email in $(cat emails.txt);
+   do user=$(cut -d "@" -f 1 <<< "$email")
       if id $user &>/dev/null; then
          echo "changing password for ${user}"
       fi
-
+   randompw=$(openssl rand -base64 32);
    adduser --gecos "" --disabled-password $user &>/dev/null
-   chage -l $user
-   echo $user:$randompw | tee /dev/tty | chpasswd
-      for email in $(cat emails.txt);
-        do echo "Hello ${user}, your new password is ${randompw}" | s-nail -v -s "Login Credentials" "${email}" -r "jonathan.deleon@mymail.champlain.edu"
-        done
-   done
+   echo $user:$randompw | chpasswd
+   chage -l $user >/dev/null
+   sudo -u jonathandeleon bash << HereTag
+   echo "Hello ${user}, your new password is ${randompw}" | s-nail -v -s "Login Credentials" $email &>/dev/null
+HereTag
+done
 }
 
 #Main
@@ -62,12 +63,12 @@ if [ $# -eq 0 ]; then
 fi
 
 if [ ! -f "$2" ]; then
-   echo "$2 does not exist"
+   echo "file does not exist"
    exit 1
 fi
 
 checkParameters
 checkRoot
 checkGroup
-export -f checkEmails
-su jonathandeleon -c "bash -c checkEmails"
+addAccounts
+
